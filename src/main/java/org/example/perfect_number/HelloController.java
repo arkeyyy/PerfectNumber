@@ -20,6 +20,7 @@ public class HelloController {
     @FXML private TextField numberField;
     @FXML private TextField threadField;
     @FXML private Button startButton;
+    @FXML private Button stopButton;
     @FXML private Label errorLabel;
     @FXML private Label statusLabel;
     @FXML private Label summaryLabel;
@@ -136,6 +137,20 @@ public class HelloController {
         }
     }
 
+    @FXML
+    private void onStop() {
+        if (!running) {
+            return;
+        }
+        stopWorkers();
+        markStoppedWorkers();
+        results.clear();
+        resultsArea.clear();
+        summaryLabel.setText("No complete results.");
+        statusLabel.setText("Stopped.");
+        setRunning(false);
+    }
+
     private int positiveInteger(TextField field, String name) {
         try {
             int value = Integer.parseInt(field.getText().trim());
@@ -171,6 +186,17 @@ public class HelloController {
 
     private void fail(Throwable exception) {
         stopWorkers();
+        markStoppedWorkers();
+        resultsArea.clear();
+        summaryLabel.setText("No complete results.");
+        statusLabel.setText("Calculation failed.");
+        String detail = exception == null ? "Unknown error" : exception.getMessage();
+        showError("Unable to finish the calculation: "
+                + (detail == null ? exception.getClass().getSimpleName() : detail));
+        setRunning(false);
+    }
+
+    private void markStoppedWorkers() {
         // Completed tiles retain their status; interrupted workers are marked as stopped.
         for (var child : progressPane.getChildren()) {
             VBox tile = (VBox) child;
@@ -179,13 +205,6 @@ public class HelloController {
                 state.setText("Stopped");
             }
         }
-        resultsArea.clear();
-        summaryLabel.setText("No complete results.");
-        statusLabel.setText("Calculation failed.");
-        String detail = exception == null ? "Unknown error" : exception.getMessage();
-        showError("Unable to finish the calculation: "
-                + (detail == null ? exception.getClass().getSimpleName() : detail));
-        setRunning(false);
     }
 
     /** Called on the JavaFX thread when the window closes. Never waits on the UI thread. */
@@ -211,6 +230,7 @@ public class HelloController {
         numberField.setDisable(value);
         threadField.setDisable(value);
         startButton.setDisable(value);
+        stopButton.setDisable(!value);
     }
 
     private void clearError() {

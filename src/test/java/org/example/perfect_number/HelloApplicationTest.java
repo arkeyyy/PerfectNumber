@@ -73,6 +73,7 @@ class HelloApplicationTest {
         onFx(() -> {
             assertEquals("Perfect Number", stage.getTitle());
             assertFalse(start().isDisabled());
+            assertTrue(stop().isDisabled());
             assertFalse(error().isVisible());
             assertFalse(results().isEditable());
             var root = stage.getScene().getRoot();
@@ -125,6 +126,7 @@ class HelloApplicationTest {
             assertTrue(indicators().stream().allMatch(indicator -> indicator.getProgress() == 1));
             assertFalse(number().isDisabled());
             assertFalse(threads().isDisabled());
+            assertTrue(stop().isDisabled());
             assertFalse(error().isVisible());
             stage.setWidth(600);
             stage.setHeight(650);
@@ -181,6 +183,87 @@ class HelloApplicationTest {
         await(() -> workerCount() == 0);
     }
 
+    @Test
+    void stopInterruptsWorkersAndPreservesTheirLastProgress() throws Exception {
+        onFx(() -> {
+            number().setText("2147483647");
+            threads().setText("3");
+            start().fire();
+            assertFalse(stop().isDisabled());
+            return null;
+        });
+        await(() -> {
+            try {
+                return onFx(() -> indicators().stream().anyMatch(indicator -> indicator.getProgress() > 0));
+            } catch (Exception exception) {
+                throw new AssertionError(exception);
+            }
+        });
+        List<Double> stoppedProgress = onFx(() -> {
+            stop().fire();
+            assertEquals("Stopped.", ((Label) find("#statusLabel")).getText());
+            assertEquals("No complete results.", summary().getText());
+            assertEquals("", results().getText());
+            assertFalse(error().isVisible());
+            assertFalse(start().isDisabled());
+            assertFalse(number().isDisabled());
+            assertFalse(threads().isDisabled());
+            assertTrue(stop().isDisabled());
+            for (Node child : progress().getChildren()) {
+                assertEquals("Stopped", ((Label) ((VBox) child).getChildren().getLast()).getText());
+            }
+            return indicators().stream().map(ProgressIndicator::getProgress).toList();
+        });
+        await(() -> workerCount() == 0);
+        onFx(() -> {
+            assertEquals(stoppedProgress, indicators().stream().map(ProgressIndicator::getProgress).toList());
+            assertEquals("Stopped.", ((Label) find("#statusLabel")).getText());
+            return null;
+        });
+        runAndWait("28", "4");
+        onFx(() -> {
+            assertEquals("6, 28", results().getText());
+            stop().fire();
+            assertEquals("6, 28", results().getText());
+            assertTrue(((Label) find("#statusLabel")).getText().startsWith("Complete."));
+            return null;
+        });
+    }
+
+    @Test
+    void immediateRestartIgnoresCallbacksFromTheStoppedRun() throws Exception {
+        onFx(() -> {
+            number().setText("2147483647");
+            threads().setText("3");
+            start().fire();
+            stop().fire();
+            number().setText("28");
+            threads().setText("4");
+            start().fire();
+            assertTrue(start().isDisabled());
+            assertFalse(stop().isDisabled());
+            return null;
+        });
+        await(() -> {
+            try {
+                return onFx(() -> !start().isDisabled());
+            } catch (Exception exception) {
+                throw new AssertionError(exception);
+            }
+        });
+        await(() -> workerCount() == 0);
+        onFx(() -> {
+            assertEquals("6, 28", results().getText());
+            assertEquals("Perfect: 2\nLess than perfect (deficient): 22\nMore than perfect (abundant): 4",
+                    summary().getText());
+            assertEquals(4, indicators().size());
+            assertTrue(indicators().stream().allMatch(indicator -> indicator.getProgress() == 1));
+            assertTrue(stop().isDisabled());
+            assertFalse(error().isVisible());
+            return null;
+        });
+    }
+
     private void runAndWait(String num, String cnt) throws Exception {
         onFx(() -> {
             number().setText(num);
@@ -206,6 +289,7 @@ class HelloApplicationTest {
     private TextField number() { return (TextField) find("#numberField"); }
     private TextField threads() { return (TextField) find("#threadField"); }
     private Button start() { return (Button) find("#startButton"); }
+    private Button stop() { return (Button) find("#stopButton"); }
     private Label error() { return (Label) find("#errorLabel"); }
     private Label summary() { return (Label) find("#summaryLabel"); }
     private TextArea results() { return (TextArea) find("#resultsArea"); }

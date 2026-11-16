@@ -18,6 +18,7 @@
             <TextField fx:id="threadField" text="4" prefWidth="120"/>
         </VBox>
         <Button fx:id="startButton" text="Start" defaultButton="true" onAction="#onStart" minWidth="80"/>
+        <Button fx:id="stopButton" text="Stop" onAction="#onStop" disable="true" minWidth="80"/>
     </HBox>
     <Label fx:id="errorLabel" visible="false" managed="false" wrapText="true"
            style="-fx-text-fill: #b00020;"/>
