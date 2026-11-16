@@ -1,4 +1,4 @@
-# Perfect Number — CSIT228
+# Perfect Number - CSIT228
 
 JavaFX application for the Perfect Number laboratory task.
 
