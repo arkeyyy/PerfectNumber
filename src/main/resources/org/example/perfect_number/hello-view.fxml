@@ -1,16 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml"
+<VBox spacing="10" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.example.perfect_number.HelloController">
-  <padding>
-    <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
-  </padding>
-
-  <Label fx:id="welcomeText"/>
-  <Button text="Hello!" onAction="#onHelloButtonClick"/>
+    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+    <Label text="Perfect Number" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+    <HBox spacing="12" alignment="BOTTOM_LEFT">
+        <VBox spacing="5" HBox.hgrow="ALWAYS">
+            <Label text="Upper limit (num)" labelFor="${numberField}"/>
+            <TextField fx:id="numberField" text="10000"/>
+        </VBox>
+        <VBox spacing="5">
+            <Label text="Threads (cnt)" labelFor="${threadField}"/>
+            <TextField fx:id="threadField" text="4" prefWidth="120"/>
+        </VBox>
+        <Button fx:id="startButton" text="Start" defaultButton="true" onAction="#onStart" minWidth="80"/>
+    </HBox>
+    <Label fx:id="errorLabel" visible="false" managed="false" wrapText="true"
+           style="-fx-text-fill: #b00020;"/>
+    <Separator/>
+    <Label fx:id="statusLabel" text="Ready." wrapText="true"/>
+    <Label text="Thread progress" style="-fx-font-weight: bold;"/>
+    <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefViewportHeight="210"
+                minHeight="140" VBox.vgrow="ALWAYS">
+        <content>
+            <TilePane fx:id="progressPane" hgap="12" vgap="16" prefTileWidth="150">
+                <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+            </TilePane>
+        </content>
+    </ScrollPane>
+    <Label text="Perfect numbers" labelFor="${resultsArea}" style="-fx-font-weight: bold;"/>
+    <TextArea fx:id="resultsArea" editable="false" wrapText="true" prefRowCount="2"
+              minHeight="60" prefHeight="70"/>
+    <Label fx:id="summaryLabel" text="No results." wrapText="true"/>
 </VBox>
